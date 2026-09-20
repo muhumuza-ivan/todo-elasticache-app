@@ -1,0 +1,20 @@
+# CodeDeploy application specification for the ECS blue/green deployment.
+#
+# <TASK_DEFINITION> is the one placeholder CodeDeploy fills in: CodePipeline
+# registers a revision from taskdef.json (with <IMAGE1_NAME> replaced by the
+# image the ECR source action reported) and substitutes its ARN here.
+#
+# NetworkConfiguration is intentionally omitted: leaving it out makes CodeDeploy
+# reuse the subnets and security groups already configured on the ECS service,
+# so the private subnet IDs never have to be duplicated in the app repository.
+version: 0.0
+
+Resources:
+  - TargetService:
+      Type: AWS::ECS::Service
+      Properties:
+        TaskDefinition: "<TASK_DEFINITION>"
+        LoadBalancerInfo:
+          ContainerName: "todo-app"
+          ContainerPort: 8080
+        PlatformVersion: "LATEST"

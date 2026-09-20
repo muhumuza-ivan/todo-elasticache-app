@@ -1,0 +1,12 @@
+target/
+.git/
+.github/
+.idea/
+.vscode/
+*.iml
+*.md
+.gitignore
+.dockerignore
+taskdef.json
+appspec.yaml
+docker-compose.yml

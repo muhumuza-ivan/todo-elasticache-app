@@ -1,0 +1,93 @@
+# Configuration as it runs in AWS. This is the default: no profile is active on
+# ECS, so what is written here is what the task uses.
+#
+# Nothing in this file is specific to an account, Region or environment. Those
+# values arrive as environment variables that ECS resolves from SSM Parameter
+# Store at task start (see taskdef.json), so the same image runs anywhere
+# without a rebuild.
+#
+# Local development overrides this file with application-local.yaml, activated
+# by -Dspring-boot.run.profiles=local. That is the only other configuration
+# file, and it is inert unless the profile is switched on explicitly.
+
+spring:
+  application:
+    name: todo-app
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      ssl:
+        # ElastiCache is created with TransitEncryptionEnabled, so this is true
+        # in AWS. Driven by /todo-app/<env>/redis/ssl.
+        enabled: ${REDIS_SSL:true}
+      # Fail fast: a slow cache must never dominate request latency.
+      timeout: 2s
+      connect-timeout: 2s
+
+server:
+  port: 8080
+  shutdown: graceful
+  forward-headers-strategy: framework
+  error:
+    include-message: always
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: true
+  health:
+    # The ALB health check must not fail because the cache is unreachable - the
+    # application degrades to database-only reads and is still serving traffic.
+    redis:
+      enabled: false
+
+app:
+  environment: ${APP_ENVIRONMENT:dev}
+  db:
+    host: ${DB_HOST}
+    port: ${DB_PORT:5432}
+    name: ${DB_NAME}
+    # In AWS this is always set, and it is what selects Secrets Manager as the
+    # credential source. The empty default is still required:
+    # @ConfigurationProperties binding does not throw on an unresolvable
+    # placeholder, it passes the literal "${DB_SECRET_ARN}" through, which is
+    # non-blank and would be sent to Secrets Manager as an identifier.
+    secret-arn: ${DB_SECRET_ARN:}
+    # Unused in AWS - the credentials come from the secret above. These exist
+    # for the local profile, and have no defaults on purpose.
+    username: ${DB_USERNAME:}
+    password: ${DB_PASSWORD:}
+    # RDS Proxy is created with RequireTLS and the parameter group sets
+    # rds.force_ssl=1, so the driver must negotiate TLS. Pinned, not defaulted:
+    # this must not be relaxable by an environment variable.
+    ssl-mode: require
+    pool-size: ${DB_POOL_SIZE:5}
+  cache:
+    enabled: ${CACHE_ENABLED:true}
+    ttl-seconds: ${CACHE_TTL_SECONDS:60}
+    key-prefix: ${CACHE_KEY_PREFIX:todo}
+
+logging:
+  level:
+    root: INFO
+    com.lab.todo: INFO
+  pattern:
+    # CloudWatch already timestamps each event; keep the line compact.
+    console: '%-5level %logger{36} - %msg%n'

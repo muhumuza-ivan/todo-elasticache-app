@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>To-Do</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="masthead">
+      <div>
+        <h1>To-Do</h1>
+        <p class="subtitle">ECS Fargate &middot; RDS Proxy &middot; ElastiCache for Redis</p>
+      </div>
+      <button id="refresh" class="ghost" type="button" title="Reload the list">Refresh</button>
+    </header>
+
+    <section class="readout" aria-live="polite">
+      <div class="readout-main">
+        <span id="source-pill" class="pill pill-idle">&mdash;</span>
+        <span id="readout-text">Loading tasks&hellip;</span>
+      </div>
+      <button id="flush" class="link" type="button" title="Delete this app's Redis keys">Flush cache</button>
+    </section>
+
+    <form id="task-form" class="composer" autocomplete="off">
+      <input id="title" name="title" type="text" maxlength="200" placeholder="What needs doing?" required>
+      <input id="description" name="description" type="text" maxlength="1000" placeholder="Notes (optional)">
+      <button type="submit">Add task</button>
+    </form>
+
+    <p id="error" class="error" hidden></p>
+
+    <ul id="task-list" class="tasks"></ul>
+    <p id="empty" class="empty" hidden>Nothing here yet. Add your first task above.</p>
+
+    <footer class="footer">
+      <span id="info-line">&nbsp;</span>
+    </footer>
+  </main>
+
+  <template id="task-template">
+    <li class="task">
+      <label class="check">
+        <input type="checkbox" class="task-done">
+        <span></span>
+      </label>
+      <div class="task-body">
+        <p class="task-title"></p>
+        <p class="task-description"></p>
+      </div>
+      <!-- Shown in place of .task-body for this row only, so editing one task
+           never disturbs the others. -->
+      <form class="task-editor" hidden>
+        <input class="edit-title" type="text" maxlength="200" required aria-label="Title">
+        <input class="edit-description" type="text" maxlength="1000" placeholder="Notes (optional)" aria-label="Notes">
+      </form>
+      <div class="task-actions">
+        <button type="button" class="link task-edit">Edit</button>
+        <button type="button" class="link danger task-delete">Delete</button>
+      </div>
+      <div class="task-actions editor-actions" hidden>
+        <button type="button" class="link task-save">Save</button>
+        <button type="button" class="link task-cancel">Cancel</button>
+      </div>
+    </li>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,250 @@
+:root {
+  color-scheme: light dark;
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --border: #e2e5ea;
+  --text: #16191d;
+  --muted: #697285;
+  --accent: #2f6feb;
+  --accent-contrast: #ffffff;
+  --cache: #0f7b55;
+  --cache-bg: #e4f4ed;
+  --db: #8a5a00;
+  --db-bg: #fbf1dd;
+  --danger: #b5322c;
+  --radius: 10px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14161a;
+    --surface: #1c1f25;
+    --border: #2c313a;
+    --text: #e8eaed;
+    --muted: #9aa3b2;
+    --accent: #6a9bff;
+    --accent-contrast: #0d1014;
+    --cache: #6fd6ab;
+    --cache-bg: #14342a;
+    --db: #e0b263;
+    --db-bg: #34290f;
+    --danger: #ef7b74;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.shell {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 16px 64px;
+}
+
+.masthead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+h1 {
+  margin: 0;
+  font-size: 28px;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.readout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 20px 0 16px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 13px;
+}
+
+.readout-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.pill {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.pill-idle { background: var(--border); color: var(--muted); }
+.pill-cache { background: var(--cache-bg); color: var(--cache); }
+.pill-db { background: var(--db-bg); color: var(--db); }
+
+.composer {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+@media (max-width: 560px) {
+  .composer { grid-template-columns: 1fr; }
+}
+
+input[type="text"] {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  min-width: 0;
+}
+
+input[type="text"]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border-radius: var(--radius);
+}
+
+.composer button[type="submit"] {
+  padding: 10px 18px;
+  border: 0;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-weight: 600;
+}
+
+.ghost {
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.link {
+  border: 0;
+  background: none;
+  color: var(--accent);
+  padding: 2px 4px;
+  font-size: 13px;
+}
+
+.link.danger { color: var(--danger); }
+
+.tasks {
+  list-style: none;
+  margin: 18px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.task {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.task-body { flex: 1; min-width: 0; }
+
+.task-title {
+  margin: 0;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.task-description {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.task.done .task-title {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+.check input { width: 17px; height: 17px; margin-top: 2px; accent-color: var(--accent); }
+.check span { display: none; }
+
+/* Occupies the same slot as .task-body while a single row is being edited. */
+.task-editor {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.task-editor input[type="text"] {
+  padding: 6px 8px;
+  font-size: 14px;
+}
+
+.task-actions {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.task.editing {
+  border-color: var(--accent);
+}
+
+button[disabled] {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.empty, .footer {
+  margin-top: 18px;
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+.error {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  background: var(--db-bg);
+  color: var(--danger);
+  font-size: 13px;
+}
+
+[hidden] { display: none !important; }

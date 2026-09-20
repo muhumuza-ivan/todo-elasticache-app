@@ -1,0 +1,13 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+.mvn/timing.properties
+
+# Local database credentials. .env.example is the committed template.
+.env
+
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+*.log

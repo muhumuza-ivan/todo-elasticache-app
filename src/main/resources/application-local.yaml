@@ -1,0 +1,35 @@
+# Local development only. Nothing here applies in AWS.
+#
+# Activated explicitly: mvn spring-boot:run -Dspring-boot.run.profiles=local
+# No profile is active on ECS, so this file is inert there even though it sits
+# in the jar - only application.yaml takes effect.
+#
+# Credentials are not in this file and have no defaults. Put DB_USERNAME and
+# DB_PASSWORD in .env (gitignored); docker-compose.yml reads the same two
+# variables, so the container and the application cannot disagree.
+
+spring:
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      ssl:
+        # The local redis container speaks plaintext.
+        enabled: false
+
+app:
+  environment: local
+  db:
+    host: ${DB_HOST:localhost}
+    port: ${DB_PORT:5432}
+    name: ${DB_NAME:todoapp}
+    # Pinned empty, not merely defaulted, so a local run never reaches Secrets
+    # Manager even in a shell that still has DB_SECRET_ARN exported from an AWS
+    # session. This is what routes DataSourceConfig to DB_USERNAME/DB_PASSWORD.
+    secret-arn: ''
+    # The local postgres container speaks plaintext.
+    ssl-mode: disable
+
+logging:
+  level:
+    com.lab.todo: DEBUG

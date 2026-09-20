@@ -1,0 +1,67 @@
+name: Build and push image
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+  workflow_dispatch:
+
+# Two pushes must not race into ECR: the second would move the :latest tag
+# while the first is still uploading layers.
+concurrency:
+  group: build-and-push-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write   # required to request the OIDC token; no AWS keys are stored
+
+jobs:
+  build:
+    name: Build and push
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+          role-session-name: gha-${{ github.run_id }}
+
+      - name: Log in to Amazon ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - uses: docker/setup-buildx-action@v3
+
+      # Tests run inside the Dockerfile's build stage, so a failing test fails
+      # this step and nothing reaches ECR. The commit SHA tag is pushed first;
+      # :latest is moved separately below.
+      - name: Build and push :${{ github.sha }}
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64
+          provenance: false
+          tags: ${{ steps.ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # The EventBridge rule only matches :latest, so the deployment starts
+      # once, after every layer is already in place. put-image re-tags the
+      # existing manifest instead of re-uploading it.
+      - name: Promote to :latest
+        run: |
+          set -euo pipefail
+          manifest=$(aws ecr batch-get-image \
+            --repository-name "${{ secrets.ECR_REPOSITORY }}" \
+            --image-ids imageTag="${{ github.sha }}" \
+            --query 'images[0].imageManifest' --output text)
+          aws ecr put-image \
+            --repository-name "${{ secrets.ECR_REPOSITORY }}" \
+            --image-tag latest \
+            --image-manifest "$manifest" >/dev/null

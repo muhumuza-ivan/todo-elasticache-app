@@ -1,0 +1,67 @@
+{
+  "family": "todo-app-dev",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "runtimePlatform": {
+    "cpuArchitecture": "X86_64",
+    "operatingSystemFamily": "LINUX"
+  },
+  "executionRoleArn": "todo-app-dev-task-execution",
+  "taskRoleArn": "todo-app-dev-task",
+  "containerDefinitions": [
+    {
+      "name": "todo-app",
+      "image": "<IMAGE1_NAME>",
+      "essential": true,
+      "portMappings": [
+        {
+          "name": "http",
+          "containerPort": 8080,
+          "hostPort": 8080,
+          "protocol": "tcp",
+          "appProtocol": "http"
+        }
+      ],
+      "environment": [
+        { "name": "APP_ENVIRONMENT", "value": "dev" },
+        { "name": "CACHE_TTL_SECONDS", "value": "60" }
+      ],
+      "secrets": [
+        { "name": "DB_HOST", "valueFrom": "/todo-app/dev/db/host" },
+        { "name": "DB_PORT", "valueFrom": "/todo-app/dev/db/port" },
+        { "name": "DB_NAME", "valueFrom": "/todo-app/dev/db/name" },
+        { "name": "DB_SECRET_ARN", "valueFrom": "/todo-app/dev/db/secret-arn" },
+        { "name": "REDIS_HOST", "valueFrom": "/todo-app/dev/redis/host" },
+        { "name": "REDIS_PORT", "valueFrom": "/todo-app/dev/redis/port" },
+        { "name": "REDIS_SSL", "valueFrom": "/todo-app/dev/redis/ssl" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/todo-app-dev",
+          "awslogs-region": "eu-west-1",
+          "awslogs-stream-prefix": "app"
+        }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      },
+      "stopTimeout": 30,
+      "ulimits": [
+        { "name": "nofile", "softLimit": 4096, "hardLimit": 8192 }
+      ]
+    }
+  ],
+  "tags": [
+    { "key": "Project", "value": "todo-app" },
+    { "key": "Environment", "value": "dev" },
+    { "key": "Component", "value": "application" },
+    { "key": "ManagedBy", "value": "codedeploy" }
+  ]
+}
