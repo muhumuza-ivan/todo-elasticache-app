@@ -25,8 +25,8 @@ spring:
           time_zone: UTC
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
+      host: ${REDIS_HOST:}
+      port: ${REDIS_PORT:}
       ssl:
         # ElastiCache is created with TransitEncryptionEnabled, so this is true
         # in AWS. Driven by /todo-app/<env>/redis/ssl.
